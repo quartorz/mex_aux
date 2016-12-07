@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 #include "mex.h"
 
 #include "base_types.hpp"
@@ -20,16 +22,30 @@ namespace mex_aux {
         return lhs[0];
     }
 
-    inline mxArray *to_intval(const vector_t<interval_t> &v)
+    template <typename E>
+    inline mxArray *to_intval(
+        const boost::numeric::ublas::vector_expression<E> &v
+    )
     {
+        using value_type = typename E::value_type;
+
+        static_assert(
+            std::is_same<std::decay_t<value_type>, interval_t>::value,
+            "v must be an interval vector"
+        );
+
+        auto e = v();
+        auto size = e.size();
+
         mxArray *lhs[1], *rhs[2];
 
-        rhs[0] = mxCreateDoubleMatrix(v.size(), 1, mxREAL);
-        rhs[1] = mxCreateDoubleMatrix(v.size(), 1, mxREAL);
+        rhs[0] = mxCreateDoubleMatrix(size, 1, mxREAL);
+        rhs[1] = mxCreateDoubleMatrix(size, 1, mxREAL);
 
-        for (unsigned i = 0; i < v.size(); ++i) {
-            mxGetPr(rhs[0])[i] = v(i).lower();
-            mxGetPr(rhs[1])[i] = v(i).upper();
+        for (unsigned i = 0; i < size; ++i) {
+            auto x = e(i);
+            mxGetPr(rhs[0])[i] = x.lower();
+            mxGetPr(rhs[1])[i] = x.upper();
         }
 
         mexCallMATLAB(1, lhs, 2, rhs, "infsup");
@@ -37,20 +53,33 @@ namespace mex_aux {
         return lhs[0];
     }
 
-    inline mxArray *to_intval(const matrix_t<interval_t> &v)
+    template <typename E>
+    inline mxArray *to_intval(
+        const boost::numeric::ublas::matrix_expression<E> &v
+    )
     {
+        using value_type = typename E::value_type;
+
+        static_assert(
+            std::is_same<std::decay_t<value_type>, interval_t>::value,
+            "v must be an interval matrix"
+        );
+
+        auto e = v();
+
         mxArray *lhs[1], *rhs[2];
 
-        auto nrows = v.size1();
-        auto ncols = v.size2();
+        auto nrows = e.size1();
+        auto ncols = e.size2();
 
         rhs[0] = mxCreateDoubleMatrix(nrows, ncols, mxREAL);
         rhs[1] = mxCreateDoubleMatrix(nrows, ncols, mxREAL);
 
         for (unsigned i = 0; i < nrows; ++i) {
             for (unsigned j = 0; j < ncols; ++j) {
-                mxGetPr(rhs[0])[i + j * nrows] = v(i, j).lower();
-                mxGetPr(rhs[1])[i + j * nrows] = v(i, j).upper();
+                auto x = e(i, j);
+                mxGetPr(rhs[0])[i + j * nrows] = x.lower();
+                mxGetPr(rhs[1])[i + j * nrows] = x.upper();
             }
         }
 

@@ -41,10 +41,10 @@ namespace mex_aux {
         return r;
     }
 
-    inline interval_t to_interval_scalar(
+    inline interval_t to_interval(
         const mxArray *v,
-        bool strict = true,
-        bool throw_if_error = false
+        bool throw_if_error = false,
+        bool strict = true
     )
     {
         if (mxIsStruct(v) && std::strcmp(mxGetClassName(v), "intval") == 0) {
@@ -91,8 +91,8 @@ namespace mex_aux {
 
     inline vector_t<interval_t> to_interval_vector(
         const mxArray *v,
-        bool strict = true,
-        bool throw_if_error = false
+        bool throw_if_error = false,
+        bool strict = true
     )
     {
         if (mxIsStruct(v) && std::strcmp(mxGetClassName(v), "intval") == 0) {
@@ -113,8 +113,8 @@ namespace mex_aux {
                 }
             }
 
-            auto inf_cpp = to_double_vector(inf_mat, strict, throw_if_error);
-            auto sup_cpp = to_double_vector(sup_mat, strict, throw_if_error);
+            auto inf_cpp = to_double_vector(inf_mat, throw_if_error, strict);
+            auto sup_cpp = to_double_vector(sup_mat, throw_if_error, strict);
 
             vector_t<interval_t> r(inf_cpp.size());
 
@@ -138,7 +138,7 @@ namespace mex_aux {
                 }
             }
 
-            auto val = to_double_vector(v, strict, throw_if_error);
+            auto val = to_double_vector(v, throw_if_error, strict);
 
             return to_interval(val);
         } 

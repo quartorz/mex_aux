@@ -11,8 +11,8 @@
 namespace mex_aux {
     inline double to_double_scalar(
         const mxArray *v,
-        bool strict = false,
-        bool throw_if_error = false
+        bool throw_if_error = false,
+        bool strict = false
     )
     {
         if (strict) {
@@ -30,8 +30,8 @@ namespace mex_aux {
 
     inline vector_t<double> to_double_vector(
         const mxArray *v,
-        bool strict = false,
-        bool throw_if_error = false
+        bool throw_if_error = false,
+        bool strict = false
     )
     {
         auto nrows = mxGetM(v);

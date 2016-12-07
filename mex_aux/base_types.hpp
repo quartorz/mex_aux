@@ -8,9 +8,11 @@
 #include <boost/numeric/ublas/matrix.hpp>
 
 #include <kv/interval.hpp>
+#include <kv/affine.hpp>
 
 namespace mex_aux {
     using interval_t = kv::interval<double>;
+    using affine_t = kv::affine<double>;
 
     template <typename T>
     using vector_t = boost::numeric::ublas::vector<T>;
