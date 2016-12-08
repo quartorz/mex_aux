@@ -23,7 +23,7 @@ struct lorenz {
 
 void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
-    if (nlhs > 1) {
+    if (nlhs > 2) {
 	    mexErrMsgIdAndTxt(
             "MATLAB:calc_lorenz:maxlhs",
             "Too many output arguments."
@@ -68,15 +68,16 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
     column(xs, 0) = to_interval(x);
 
     lorenz func;
+    int status = 2;
 
     while (niter < n) {
         ++niter;
 
         ts(niter) = t_start + (t_end - t_start) * niter / n;
 
-        int r = kv::ode_maffine(func, x, ts(niter - 1), ts(niter));
+        status = kv::ode_maffine(func, x, ts(niter - 1), ts(niter));
 
-        if (r == 0) {
+        if (status == 0) {
             // 全く精度保証できなかった
             --niter;
             break;
@@ -84,7 +85,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 
         column(xs, niter) = to_interval(x);
 
-        if (r == 1) {
+        if (status == 1) {
             // 途中までしか精度保証できなかった
             break;
         }
@@ -94,6 +95,11 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 
     // 結果を出力に書き込む
     plhs[0] = mxCreateStructMatrix(1, 1, 2, result_fields);
+
     mex_aux::set_field(plhs[0], 0, 0, mex_aux::to_intval(subrange(ts, 0, niter + 1)));
     mex_aux::set_field(plhs[0], 0, 1, mex_aux::to_intval(subrange(xs, 0, 3, 0, niter + 1)));
+
+    if (nlhs >= 2) {
+        plhs[1] = mxCreateDoubleScalar(status);
+    }
 }
